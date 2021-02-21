@@ -1,0 +1,38 @@
+{
+  "name": "@trex-arms/sqs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "uvu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trex-arms/sqs.git"
+  },
+  "keywords": [
+    "sqs",
+    "isomorphic",
+    "browser",
+    "node"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trex-arms/sqs/issues"
+  },
+  "homepage": "https://github.com/trex-arms/sqs#readme",
+  "imports": {
+    "#sign-aws-requests": "sign-aws-requests/dist/sign-aws-requests.mjs"
+  },
+  "dependencies": {
+    "@rgrove/parse-xml": "^2.0.4",
+    "httpie": "^2.0.0-next.9",
+    "just-pascal-case": "^1.1.0",
+    "sign-aws-requests": "^1.0.1"
+  },
+  "devDependencies": {
+    "uvu": "^0.5.1"
+  }
+}
