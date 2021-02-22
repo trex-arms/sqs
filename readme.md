@@ -34,9 +34,9 @@ Functions on the `sqs` object:
 - `send_message(queue_url, message, { delay_seconds, message_attribute = {} } = {})`
 	- message is converted to JSON via `JSON.stringify(message)`
 	- returns `{ message_id, md5_of_body }`
-- `send_message_batch: (queue_url, messages)`
+- `send_message_batch(queue_url, messages)`
 	- returns an array of `{ message_id, md5_of_body }`
-- `receive_message: (queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds } = {})`
+- `receive_message(queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds } = {})`
 	- message bodies are parsed via `JSON.parse(message)`
 	- returns `{ body, message_id, md5_of_body, receipt_handle }`
 
@@ -44,7 +44,7 @@ Attribute objects are expected to have `snake_case` properties.
 
 ## To run the tests
 
-Paste your credentials into the strings at the top of the [test.mjs](./test.mjs) file.
+Paste your credentials into the strings at the top of the [index.test.mjs](./index.test.mjs) file.
 
 Then
 
