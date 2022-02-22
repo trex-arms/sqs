@@ -23,14 +23,11 @@
     "url": "https://github.com/trex-arms/sqs/issues"
   },
   "homepage": "https://github.com/trex-arms/sqs#readme",
-  "imports": {
-    "#sign-aws-requests": "sign-aws-requests/dist/sign-aws-requests.mjs"
-  },
   "dependencies": {
     "@rgrove/parse-xml": "^2.0.4",
     "httpie": "^2.0.0-next.9",
     "just-pascal-case": "^1.1.0",
-    "sign-aws-requests": "^1.0.1"
+    "sign-aws-requests": "^2.0.0"
   },
   "devDependencies": {
     "uvu": "^0.5.1"

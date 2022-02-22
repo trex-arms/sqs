@@ -7,11 +7,7 @@
 // form-urlencoded
 
 import { post } from 'httpie'
-
-// bug in import/extensions: https://github.com/benmosher/eslint-plugin-import/issues/1887
-// eslint-disable-next-line import/extensions, import/no-unresolved
-import { createAwsSigner as create_aws_signer } from '#sign-aws-requests'
-
+import { createAwsSigner as create_aws_signer } from 'sign-aws-requests'
 import parse_xml from '@rgrove/parse-xml'
 
 import { convert_to_attributes_object, generic_attributes_builder } from './convert_to_attributes_object.mjs'
