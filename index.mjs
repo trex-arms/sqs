@@ -34,6 +34,12 @@ const concat_text = element => element.children.filter(({ type }) => type === `t
 const read_text_from_descendant = (response_element, ...rest_of_target_names) => concat_text(
 	drill_down_to_children(response_element, ...rest_of_target_names)[0],
 )
+const read_text_from_attribute_value = (message, attribute_name) => {
+	const attribute = elements_with_name(message.children, `Attribute`)
+		.find(attribute => read_text_from_descendant(attribute, `Name`) === attribute_name)
+
+	return attribute ? read_text_from_descendant(attribute, 'Value') : null
+}
 
 const get_urlencoded_params = params => [
 	...make_form_lines_from_object(params),
@@ -192,6 +198,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 			MaxNumberOfMessages: max_number_of_messages,
 			VisibilityTimeout: visibility_timeout,
 			WaitTimeSeconds: wait_time_seconds,
+			'AttributeName.1': `ApproximateReceiveCount`,
 		}).then(
 			response =>
 				drill_down_to_children(
@@ -205,6 +212,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 						message_id: read_text_from_descendant(message, `MessageId`),
 						md5_of_body: read_text_from_descendant(message, `MD5OfBody`),
 						receipt_handle: read_text_from_descendant(message, `ReceiptHandle`),
+						approximate_receive_count: read_text_from_attribute_value(message, `ApproximateReceiveCount`),
 					}),
 				),
 		),
