@@ -9,8 +9,10 @@
 import { post } from 'httpie'
 import { createAwsSigner as create_aws_signer } from 'sign-aws-requests'
 import parse_xml from '@rgrove/parse-xml'
+import make_snake_case from 'just-snake-case'
 
 import { convert_to_attributes_object, generic_attributes_builder } from './convert_to_attributes_object.mjs'
+import convert_to_attribute_request_parameters from './convert_to_attribute_request_parameters.mjs'
 import catchify from './catchify.mjs'
 
 const form_urlencode = value => encodeURIComponent(value).replace(/%20/g, `+`)
@@ -34,11 +36,20 @@ const concat_text = element => element.children.filter(({ type }) => type === `t
 const read_text_from_descendant = (response_element, ...rest_of_target_names) => concat_text(
 	drill_down_to_children(response_element, ...rest_of_target_names)[0],
 )
-const read_text_from_attribute_value = (element, attribute_name) => {
-	const attribute = elements_with_name(element.children, `Attribute`)
-		.find(attribute => read_text_from_descendant(attribute, `Name`) === attribute_name)
+const convert_attribute_elements_to_object = (element) => {
+	const attributes = elements_with_name(element.children, `Attribute`)
 
-	return attribute ? read_text_from_descendant(attribute, 'Value') : null
+	return Object.fromEntries(attributes.map((attribute) => {
+
+		const name = read_text_from_descendant(attribute, `Name`)
+		const text_value = read_text_from_descendant(attribute, `Value`)
+		const int_value = parseInt(text_value)
+
+		return [
+			make_snake_case(name),
+			Number.isNaN(int_value) ? text_value : int_value
+		]
+	}))
 }
 
 const get_urlencoded_params = params => [
@@ -148,24 +159,19 @@ export default ({ access_key_id, secret_access_key, region }) => {
 				`QueueUrl`,
 			),
 		),
-		get_queue_redrive_policy: queue_url => request(queue_url, {
+		get_queue_attributes: (queue_url, attribute_names = []) => request(queue_url, {
 			Action: `GetQueueAttributes`,
-			'AttributeName.1': `RedrivePolicy`
+			...convert_to_attribute_request_parameters(attribute_names),
 		}).then(
 			response => {
-				const redrive_policy = JSON.parse(read_text_from_attribute_value(
-					drill_down_to_children(
-						response,
-						`GetQueueAttributesResponse`,
-						`GetQueueAttributesResult`,
-					)[0],
-					`RedrivePolicy`
-				))
-				return redrive_policy && {
-					dead_letter_target_arn: redrive_policy.deadLetterTargetArn,
-					max_receive_count: redrive_policy.maxReceiveCount
-				}
-			},
+				const attributes_result = drill_down_to_children(
+					response,
+					`GetQueueAttributesResponse`,
+					`GetQueueAttributesResult`,
+				)[0]
+
+				return convert_attribute_elements_to_object(attributes_result)
+			}
 		),
 		delete_queue: queue_url => request(queue_url, {
 			Action: `DeleteQueue`,
@@ -212,12 +218,12 @@ export default ({ access_key_id, secret_access_key, region }) => {
 				md5_of_body: read_text_from_descendant(result_entry, `MD5OfMessageBody`),
 			})),
 		),
-		receive_message: (queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds } = {}) => request(queue_url, {
+		receive_message: (queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds, attribute_names = [] } = {}) => request(queue_url, {
 			Action: `ReceiveMessage`,
 			MaxNumberOfMessages: max_number_of_messages,
 			VisibilityTimeout: visibility_timeout,
 			WaitTimeSeconds: wait_time_seconds,
-			'AttributeName.1': `ApproximateReceiveCount`,
+			...convert_to_attribute_request_parameters(attribute_names),
 		}).then(
 			response =>
 				drill_down_to_children(
@@ -231,7 +237,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 						message_id: read_text_from_descendant(message, `MessageId`),
 						md5_of_body: read_text_from_descendant(message, `MD5OfBody`),
 						receipt_handle: read_text_from_descendant(message, `ReceiptHandle`),
-						approximate_receive_count: parseInt(read_text_from_attribute_value(message, `ApproximateReceiveCount`), 10),
+						attributes: convert_attribute_elements_to_object(message),
 					}),
 				),
 		),
