@@ -30,15 +30,17 @@ Functions on the `sqs` object:
 	- returns queue url (string)
 - `get_queue_url(queue_name)`
 	- returns queue url (string)
+- `get_queue_attributes(queue_url, attribute_names = [])`
+	- returns attributes (object)
 - `delete_queue(queue_url)`
 - `send_message(queue_url, message, { delay_seconds, message_attribute = {} } = {})`
 	- message is converted to JSON via `JSON.stringify(message)`
 	- returns `{ message_id, md5_of_body }`
 - `send_message_batch(queue_url, messages)`
 	- returns an array of `{ message_id, md5_of_body }`
-- `receive_message(queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds } = {})`
+- `receive_message(queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds, attribute_names = [] } = {})`
 	- message bodies are parsed via `JSON.parse(message)`
-	- returns `{ body, message_id, md5_of_body, receipt_handle }`
+	- returns `{ body, message_id, md5_of_body, receipt_handle, attributes }`
 - `delete_message(queue_url, receipt_handle)`
 
 Attribute objects are expected to have `snake_case` properties.
