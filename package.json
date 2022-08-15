@@ -27,6 +27,7 @@
     "@rgrove/parse-xml": "^2.0.4",
     "httpie": "^2.0.0-next.9",
     "just-pascal-case": "^1.1.0",
+    "just-snake-case": "^3.1.1",
     "sign-aws-requests": "^2.0.0"
   },
   "devDependencies": {
