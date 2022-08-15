@@ -43,11 +43,11 @@ const convert_attribute_elements_to_object = (element) => {
 
 		const name = read_text_from_descendant(attribute, `Name`)
 		const text_value = read_text_from_descendant(attribute, `Value`)
-		const int_value = parseInt(text_value)
+		const is_all_digits = /^\d+$/.test(text_value)
 
 		return [
 			make_snake_case(name),
-			Number.isNaN(int_value) ? text_value : int_value
+			is_all_digits ? parseInt(text_value, 10) : text_value
 		]
 	}))
 }
