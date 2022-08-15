@@ -54,6 +54,7 @@ test(`send, receive`, async() => {
 	const [ result_of_receive ] = await sqs.receive_message(queue_url, { wait_time_seconds: 10 })
 
 	assert.type(result_of_receive.receipt_handle, `string`)
+	assert.type(result_of_receive.approximate_receive_count, `number`)
 
 	assert.is(result_of_send.message_id, result_of_receive.message_id)
 	assert.is(result_of_send.md5_of_body, result_of_receive.md5_of_body)

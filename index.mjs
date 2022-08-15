@@ -212,7 +212,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 						message_id: read_text_from_descendant(message, `MessageId`),
 						md5_of_body: read_text_from_descendant(message, `MD5OfBody`),
 						receipt_handle: read_text_from_descendant(message, `ReceiptHandle`),
-						approximate_receive_count: read_text_from_attribute_value(message, `ApproximateReceiveCount`),
+						approximate_receive_count: parseInt(read_text_from_attribute_value(message, `ApproximateReceiveCount`), 10),
 					}),
 				),
 		),
