@@ -34,8 +34,8 @@ const concat_text = element => element.children.filter(({ type }) => type === `t
 const read_text_from_descendant = (response_element, ...rest_of_target_names) => concat_text(
 	drill_down_to_children(response_element, ...rest_of_target_names)[0],
 )
-const read_text_from_attribute_value = (message, attribute_name) => {
-	const attribute = elements_with_name(message.children, `Attribute`)
+const read_text_from_attribute_value = (element, attribute_name) => {
+	const attribute = elements_with_name(element.children, `Attribute`)
 		.find(attribute => read_text_from_descendant(attribute, `Name`) === attribute_name)
 
 	return attribute ? read_text_from_descendant(attribute, 'Value') : null
@@ -147,6 +147,25 @@ export default ({ access_key_id, secret_access_key, region }) => {
 				`GetQueueUrlResult`,
 				`QueueUrl`,
 			),
+		),
+		get_queue_redrive_policy: queue_url => request(queue_url, {
+			Action: `GetQueueAttributes`,
+			'AttributeName.1': `RedrivePolicy`
+		}).then(
+			response => {
+				const redrive_policy = JSON.parse(read_text_from_attribute_value(
+					drill_down_to_children(
+						response,
+						`GetQueueAttributesResponse`,
+						`GetQueueAttributesResult`,
+					)[0],
+					`RedrivePolicy`
+				))
+				return redrive_policy && {
+					dead_letter_target_arn: redrive_policy.deadLetterTargetArn,
+					max_receive_count: redrive_policy.maxReceiveCount
+				}
+			},
 		),
 		delete_queue: queue_url => request(queue_url, {
 			Action: `DeleteQueue`,

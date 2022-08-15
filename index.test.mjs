@@ -3,8 +3,11 @@ import * as assert from 'uvu/assert'
 
 import instantiate_sqs from './index.mjs'
 
+const region = `us-east-2`
+const account_id = ``
+
 const aws_sqs_auth = {
-	region: `us-east-2`,
+	region,
 	access_key_id: ``,
 	secret_access_key: ``,
 }
@@ -37,6 +40,39 @@ test(`create_queue, get_queue_url, delete_queue, error parsing`, async() => {
 		assert.ok(err.message.includes(`AWS.SimpleQueueService.NonExistentQueue`))
 		assert.is(err.code, `AWS.SimpleQueueService.NonExistentQueue`)
 	}
+})
+
+test(`get_queue_redrive_policy not null`, async() => {
+	const sqs = instantiate_sqs(aws_sqs_auth)
+
+	const dlq_name = `test_automated_dead_letter_queue`
+	const dlq_arn = `arn:aws:sqs:${ region }:${ account_id }:${dlq_name}`
+	const dlq_url = await sqs.create_queue(dlq_name)
+
+	const queue_url = await sqs.create_queue(`test_automated_queue_redrive_policy`, { redrive_policy: JSON.stringify({ deadLetterTargetArn: dlq_arn, maxReceiveCount: 2 }) })
+
+	const redrive_policy = await sqs.get_queue_redrive_policy(queue_url)
+
+	assert.ok(redrive_policy)
+	assert.type(redrive_policy.dead_letter_target_arn, `string`)
+	assert.equal(redrive_policy.dead_letter_target_arn, dlq_arn)
+	assert.type(redrive_policy.max_receive_count, `number`)
+	assert.equal(redrive_policy.max_receive_count, 2)
+
+	await sqs.delete_queue(queue_url)
+	await sqs.delete_queue(dlq_url)
+})
+
+test(`get_queue_redrive_policy null`, async() => {
+	const sqs = instantiate_sqs(aws_sqs_auth)
+
+	const queue_url = await sqs.create_queue(`test_automated_queue_no_redrive_policy`)
+
+	const redrive_policy = await sqs.get_queue_redrive_policy(queue_url)
+
+	assert.not(redrive_policy)
+
+	await sqs.delete_queue(queue_url)
 })
 
 test(`send, receive`, async() => {
