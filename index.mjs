@@ -104,8 +104,12 @@ const sign_and_request = async({ sign, host, url, body }) => {
 		let error_element
 		try {
 			error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
-		} catch (_) {
-			throw new Error(`AWS error.  HTTP status ${ failed_response.statusCode } (${ failed_response.statusMessage })\n${ failed_response.data }`)
+		} catch (err) {
+			if (failed_response.statusCode) {
+				throw new Error(`AWS error.  HTTP status ${ failed_response.statusCode } (${ failed_response.statusMessage })\n${ failed_response.data }`)
+			} else {
+				throw err
+			}
 		}
 
 
