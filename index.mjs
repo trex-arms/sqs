@@ -13,7 +13,6 @@ import make_snake_case from 'just-snake-case'
 
 import { convert_to_attributes_object, generic_attributes_builder } from './convert_to_attributes_object.mjs'
 import convert_to_attribute_request_parameters from './convert_to_attribute_request_parameters.mjs'
-import catchify from './catchify.mjs'
 
 const form_urlencode = value => encodeURIComponent(value).replace(/%20/g, `+`)
 
@@ -90,38 +89,33 @@ const sign_and_request = async({ sign, host, url, body }) => {
 		body: body_string,
 	})
 
-	const [ failed_response, successful_response ] = await catchify(post(url, {
-		headers: {
-			...headers,
-			authorization,
-		},
-		body: body_string,
-	}))
+	let successful_response
+	try {
+		successful_response = await post(url, {
+			headers: {
+				...headers,
+				authorization,
+			},
+			body: body_string,
+		})
+	} catch (failed_response) {
+		let error_to_throw = failed_response
 
-	if (successful_response) {
-		return parse_xml_or_throw(await get_response_text(successful_response))
-	} else {
-		let error_element
 		try {
-			error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
-		} catch (err) {
-			if (failed_response.statusCode) {
-				throw new Error(`AWS error.  HTTP status ${ failed_response.statusCode } (${ failed_response.statusMessage })\n${ failed_response.data }`)
-			} else {
-				throw err
-			}
-		}
+			const error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
 
+			const type = read_text_from_descendant(error_element, `Type`)
+			const code = read_text_from_descendant(error_element, `Code`)
+			const message = read_text_from_descendant(error_element, `Message`)
 
-		const type = read_text_from_descendant(error_element, `Type`)
-		const code = read_text_from_descendant(error_element, `Code`)
-		const message = read_text_from_descendant(error_element, `Message`)
+			error_to_throw = new Error(`AWS error. type: "${ type }", code: "${ code }", message: "${ message }"`)
+			error_to_throw.code = code
+		} catch (_) {}
 
-		const error = new Error(`AWS error. type: "${ type }", code: "${ code }", message: "${ message }"`)
-		error.code = code
-
-		throw error
+		throw error_to_throw
 	}
+
+	return parse_xml_or_throw(await get_response_text(successful_response))
 }
 
 export default ({ access_key_id, secret_access_key, region }) => {
