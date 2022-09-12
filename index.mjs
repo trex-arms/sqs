@@ -115,7 +115,13 @@ const sign_and_request = async({ sign, host, url, body }) => {
 		throw error_to_throw
 	}
 
-	return parse_xml_or_throw(await get_response_text(successful_response))
+	const response_string = await get_response_text(successful_response)
+
+	if (!response_string) {
+		throw new Error(`No body on response.  Status code was ${successful_response.statusCode} – response was "${response_string}"`)
+	}
+
+	return parse_xml_or_throw(response_string)
 }
 
 export default ({ access_key_id, secret_access_key, region }) => {
