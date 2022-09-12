@@ -102,16 +102,15 @@ const sign_and_request = async({ sign, host, url, body }) => {
 		body: body_string,
 	})
 
-	let successful_response
-	try {
-		successful_response = await post(url, {
-			headers: {
-				...headers,
-				authorization,
-			},
-			body: body_string,
-		})
-	} catch (failed_response) {
+	const [ failed_response, successful_response ] = await post(url, {
+		headers: {
+			...headers,
+			authorization,
+		},
+		body: body_string,
+	})
+
+	if (failed_response) {
 		const [ , built_error ] = await catchify(build_error_from_failed_response(failed_response))
 
 		throw built_error || failed_response
