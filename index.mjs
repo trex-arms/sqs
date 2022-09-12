@@ -13,7 +13,6 @@ import make_snake_case from 'just-snake-case'
 
 import { convert_to_attributes_object, generic_attributes_builder } from './convert_to_attributes_object.mjs'
 import convert_to_attribute_request_parameters from './convert_to_attribute_request_parameters.mjs'
-import catchify from './catchify.mjs'
 
 const form_urlencode = value => encodeURIComponent(value).replace(/%20/g, `+`)
 
@@ -36,18 +35,17 @@ const concat_text = element => element.children.filter(({ type }) => type === `t
 const read_text_from_descendant = (response_element, ...rest_of_target_names) => concat_text(
 	drill_down_to_children(response_element, ...rest_of_target_names)[0],
 )
-const convert_attribute_elements_to_object = (element) => {
+const convert_attribute_elements_to_object = element => {
 	const attributes = elements_with_name(element.children, `Attribute`)
 
-	return Object.fromEntries(attributes.map((attribute) => {
-
+	return Object.fromEntries(attributes.map(attribute => {
 		const name = read_text_from_descendant(attribute, `Name`)
 		const text_value = read_text_from_descendant(attribute, `Value`)
 		const is_all_digits = /^\d+$/.test(text_value)
 
 		return [
 			make_snake_case(name),
-			is_all_digits ? parseInt(text_value, 10) : text_value
+			is_all_digits ? parseInt(text_value, 10) : text_value,
 		]
 	}))
 }
@@ -90,17 +88,23 @@ const sign_and_request = async({ sign, host, url, body }) => {
 		body: body_string,
 	})
 
-	const [ failed_response, successful_response ] = await catchify(post(url, {
-		headers: {
-			...headers,
-			authorization,
-		},
-		body: body_string,
-	}))
+	try {
+		const successful_response = await post(url, {
+			headers: {
+				...headers,
+				authorization,
+			},
+			body: body_string,
+		})
 
-	if (successful_response) {
-		return parse_xml_or_throw(await get_response_text(successful_response))
-	} else {
+		const response_string = await get_response_text(successful_response)
+
+		if (!response_string) {
+			throw new Error(`No body on response.  Status code was ${successful_response.statusCode} – response was "${response_string}"`)
+		}
+
+		return parse_xml_or_throw(response_string)
+	} catch (failed_response) {
 		let error_element
 		try {
 			error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
@@ -175,7 +179,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 				)[0]
 
 				return convert_attribute_elements_to_object(attributes_result)
-			}
+			},
 		),
 		delete_queue: queue_url => request(queue_url, {
 			Action: `DeleteQueue`,
