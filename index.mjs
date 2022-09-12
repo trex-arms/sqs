@@ -13,6 +13,7 @@ import make_snake_case from 'just-snake-case'
 
 import { convert_to_attributes_object, generic_attributes_builder } from './convert_to_attributes_object.mjs'
 import convert_to_attribute_request_parameters from './convert_to_attribute_request_parameters.mjs'
+import catchify from './catchify.mjs'
 
 const form_urlencode = value => encodeURIComponent(value).replace(/%20/g, `+`)
 
@@ -74,6 +75,18 @@ const get_response_text = async response => {
 	}
 }
 
+const build_error_from_failed_response = async failed_response => {
+	const error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
+
+	const type = read_text_from_descendant(error_element, `Type`)
+	const code = read_text_from_descendant(error_element, `Code`)
+	const message = read_text_from_descendant(error_element, `Message`)
+
+	const err = new Error(`AWS error. type: "${ type }", code: "${ code }", message: "${ message }"`)
+	err.code = code
+	return err
+}
+
 const sign_and_request = async({ sign, host, url, body }) => {
 	const body_string = get_urlencoded_params(body)
 
@@ -99,20 +112,9 @@ const sign_and_request = async({ sign, host, url, body }) => {
 			body: body_string,
 		})
 	} catch (failed_response) {
-		let error_to_throw = failed_response
+		const [ , built_error ] = await catchify(build_error_from_failed_response(failed_response))
 
-		try {
-			const error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
-
-			const type = read_text_from_descendant(error_element, `Type`)
-			const code = read_text_from_descendant(error_element, `Code`)
-			const message = read_text_from_descendant(error_element, `Message`)
-
-			error_to_throw = new Error(`AWS error. type: "${ type }", code: "${ code }", message: "${ message }"`)
-			error_to_throw.code = code
-		} catch (_) {}
-
-		throw error_to_throw
+		throw built_error || failed_response
 	}
 
 	const response_string = await get_response_text(successful_response)
