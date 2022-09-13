@@ -75,6 +75,18 @@ const get_response_text = async response => {
 	}
 }
 
+const build_error_from_failed_response = async failed_response => {
+	const error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
+
+	const type = read_text_from_descendant(error_element, `Type`)
+	const code = read_text_from_descendant(error_element, `Code`)
+	const message = read_text_from_descendant(error_element, `Message`)
+
+	const err = new Error(`AWS error. type: "${ type }", code: "${ code }", message: "${ message }"`)
+	err.code = code
+	return err
+}
+
 const sign_and_request = async({ sign, host, url, body }) => {
 	const body_string = get_urlencoded_params(body)
 
@@ -98,30 +110,19 @@ const sign_and_request = async({ sign, host, url, body }) => {
 		body: body_string,
 	}))
 
-	if (successful_response) {
-		return parse_xml_or_throw(await get_response_text(successful_response))
-	} else {
-		let error_element
-		try {
-			error_element = drill_down_to_children(parse_xml_or_throw(await get_response_text(failed_response)), `ErrorResponse`, `Error`)[0]
-		} catch (err) {
-			if (failed_response.statusCode) {
-				throw new Error(`AWS error.  HTTP status ${ failed_response.statusCode } (${ failed_response.statusMessage })\n${ failed_response.data }`)
-			} else {
-				throw err
-			}
-		}
+	if (failed_response) {
+		const [ , built_error ] = await catchify(build_error_from_failed_response(failed_response))
 
-
-		const type = read_text_from_descendant(error_element, `Type`)
-		const code = read_text_from_descendant(error_element, `Code`)
-		const message = read_text_from_descendant(error_element, `Message`)
-
-		const error = new Error(`AWS error. type: "${ type }", code: "${ code }", message: "${ message }"`)
-		error.code = code
-
-		throw error
+		throw built_error || failed_response
 	}
+
+	const response_string = await get_response_text(successful_response)
+
+	if (!response_string) {
+		throw new Error(`No body on response.  Status code was ${successful_response.statusCode} – response was "${response_string}"`)
+	}
+
+	return parse_xml_or_throw(response_string)
 }
 
 export default ({ access_key_id, secret_access_key, region }) => {
