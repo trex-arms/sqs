@@ -7,7 +7,7 @@
 // form-urlencoded
 
 import { post } from 'httpie'
-import { createAwsSigner as create_aws_signer } from 'sign-aws-requests'
+import { createAwsSigner as create_aws_signer } from '@tehshrike/sign-aws-requests'
 import parse_xml from '@rgrove/parse-xml'
 import make_snake_case from 'just-snake-case'
 
@@ -36,18 +36,17 @@ const concat_text = element => element.children.filter(({ type }) => type === `t
 const read_text_from_descendant = (response_element, ...rest_of_target_names) => concat_text(
 	drill_down_to_children(response_element, ...rest_of_target_names)[0],
 )
-const convert_attribute_elements_to_object = (element) => {
+const convert_attribute_elements_to_object = element => {
 	const attributes = elements_with_name(element.children, `Attribute`)
 
-	return Object.fromEntries(attributes.map((attribute) => {
-
+	return Object.fromEntries(attributes.map(attribute => {
 		const name = read_text_from_descendant(attribute, `Name`)
 		const text_value = read_text_from_descendant(attribute, `Value`)
 		const is_all_digits = /^\d+$/.test(text_value)
 
 		return [
 			make_snake_case(name),
-			is_all_digits ? parseInt(text_value, 10) : text_value
+			is_all_digits ? parseInt(text_value, 10) : text_value,
 		]
 	}))
 }
@@ -176,7 +175,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 				)[0]
 
 				return convert_attribute_elements_to_object(attributes_result)
-			}
+			},
 		),
 		delete_queue: queue_url => request(queue_url, {
 			Action: `DeleteQueue`,
