@@ -25,10 +25,10 @@
   "homepage": "https://github.com/trex-arms/sqs#readme",
   "dependencies": {
     "@rgrove/parse-xml": "^2.0.4",
+    "@tehshrike/sign-aws-requests": "^2.1.0",
     "httpie": "^2.0.0-next.13",
     "just-pascal-case": "^1.1.0",
-    "just-snake-case": "^3.1.1",
-    "sign-aws-requests": "github:TehShrike/sign-aws-requests#patch-2"
+    "just-snake-case": "^3.1.1"
   },
   "devDependencies": {
     "uvu": "^0.5.1"
