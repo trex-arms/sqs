@@ -40,7 +40,7 @@ Functions on the `sqs` object:
 	- returns an array of `{ message_id, md5_of_body }`
 - `receive_message(queue_url, { max_number_of_messages, visibility_timeout, wait_time_seconds, attribute_names = [] } = {})`
 	- message bodies are parsed via `JSON.parse(message)`
-	- returns `{ body, message_id, md5_of_body, receipt_handle, attributes }`
+	- returns `{ body, message_id, md5_of_body, receipt_handle, attributes }[]`
 - `delete_message(queue_url, receipt_handle)`
 
 Attribute objects are expected to have `snake_case` properties.
