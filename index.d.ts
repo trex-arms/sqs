@@ -21,7 +21,7 @@ declare module '@trex-arms/sqs' {
 			md5_of_body: string
 			receipt_handle: string
 			attributes: Attributes
-		}>
+		}[]>
 		delete_message: (queue_url: string, receipt_handle: string) => Promise<void>
 	}
 
