@@ -182,7 +182,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 		}),
 		send_message: (queue_url, message, { delay_seconds, message_attribute = {} } = {}) => request(queue_url, {
 			Action: `SendMessage`,
-			MessageBody: JSON.stringify(message),
+			MessageBody: message,
 			DelaySeconds: delay_seconds,
 			...convert_to_attributes_object(message_attribute, { name: `MessageAttribute`, type: true }),
 		}).then(
@@ -206,7 +206,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 			...generic_attributes_builder(
 				messages.map((message, i) => ({
 					Id: `message_${ i }`,
-					MessageBody: JSON.stringify(message),
+					MessageBody: message,
 				})),
 				{
 					name: `SendMessageBatchRequestEntry`,
@@ -237,7 +237,7 @@ export default ({ access_key_id, secret_access_key, region }) => {
 					`Message`,
 				).map(
 					message => ({
-						body: JSON.parse(read_text_from_descendant(message, `Body`)),
+						body: read_text_from_descendant(message, `Body`),
 						message_id: read_text_from_descendant(message, `MessageId`),
 						md5_of_body: read_text_from_descendant(message, `MD5OfBody`),
 						receipt_handle: read_text_from_descendant(message, `ReceiptHandle`),

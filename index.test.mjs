@@ -81,7 +81,7 @@ test(`send, receive`, async() => {
 
 	const queue_url = await sqs.create_queue(`test_automated_read_write`)
 
-	const message_body = { test: `yes`, number: 2 }
+	const message_body = "{ test: `yes`, number: 2 }"
 
 	const result_of_send = await sqs.send_message(queue_url, message_body)
 
