@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.mjs",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "test": "uvu"
   },
@@ -26,7 +29,6 @@
   "dependencies": {
     "@rgrove/parse-xml": "^2.0.4",
     "@tehshrike/sign-aws-requests": "^2.1.0",
-    "httpie": "^2.0.0-next.13",
     "just-pascal-case": "^1.1.0",
     "just-snake-case": "^3.1.1"
   },
