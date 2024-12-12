@@ -2,15 +2,7 @@ import { suite } from 'uvu'
 import * as assert from 'uvu/assert'
 
 import instantiate_sqs from './index.mjs'
-
-const region = `us-east-2`
-const account_id = ``
-
-const aws_sqs_auth = {
-	region,
-	access_key_id: ``,
-	secret_access_key: ``,
-}
+import { region, account_id, aws_sqs_auth } from './test_secrets.mjs'
 
 const test = suite(`SQS`)
 
