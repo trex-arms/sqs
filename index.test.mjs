@@ -25,12 +25,15 @@ test(`create_queue, get_queue_url, delete_queue, error parsing`, async() => {
 
 	await sqs.delete_queue(result_of_get_queue_url)
 
+	// Without this short delay, get_queue_url was returning the just-deleted queue name.
+	await new Promise(resolve => setTimeout(resolve, 100))
+
 	try {
-		await sqs.get_queue_url(test_queue_name)
-		assert.unreachable(`Should throw an error`)
+		const result = await sqs.get_queue_url(test_queue_name)
+		assert.unreachable(`get_queue_url should throw an error, but it returned "${result}"`)
 	} catch (err) {
-		assert.ok(err.message.includes(`AWS.SimpleQueueService.NonExistentQueue`))
-		assert.is(err.code, `AWS.SimpleQueueService.NonExistentQueue`)
+		assert.ok(err.message.includes(`AWS.SimpleQueueService.NonExistentQueue`), `"${err.message}" contains "AWS.SimpleQueueService.NonExistentQueue"`)
+		assert.is(err.code, `AWS.SimpleQueueService.NonExistentQueue`, `"${err.code}" is "AWS.SimpleQueueService.NonExistentQueue"`)
 	}
 })
 
