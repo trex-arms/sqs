@@ -8,6 +8,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:offline": "uvu --ignore=\\.online\\.",
     "test": "uvu"
   },
   "repository": {
