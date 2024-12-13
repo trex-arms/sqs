@@ -4,6 +4,13 @@
   "description": "",
   "main": "index.mjs",
   "types": "index.d.ts",
+  "files": [
+    "changelog.md",
+    "index.d.ts",
+    "index.mjs",
+    "convert_to_attribute_request_parameters.mjs",
+    "convert_to_attributes_object.mjs"
+  ],
   "type": "module",
   "engines": {
     "node": ">=18"
