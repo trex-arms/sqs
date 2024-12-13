@@ -2,7 +2,7 @@ Talk to the SQS API from node or browsers/Cloudflare Workers.
 
 ## API
 
-All the code is .mjs, so you'll probably need node 14+.
+Uses `fetch` so you'll need node 18+.
 
 A single function is exported.  Pass in your credentials, get back an object with a bunch of functions.
 
@@ -47,7 +47,7 @@ Attribute objects are expected to have `snake_case` properties.
 
 ## To run the tests
 
-Paste your credentials into the strings at the top of the [index.test.mjs](./index.test.mjs) file.
+Copy [`test_secrets.sample.mjs`](./test_secrets.sample.mjs) to `test_secrets.mjs`, then fill in your credentials.
 
 Then
 
