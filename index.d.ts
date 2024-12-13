@@ -1,13 +1,15 @@
 type Attributes = { [key: string]: any }
 
-type MessageResponse = { message_id: string, md5_of_body: string }
+export type MessageResponse = { message_id: string, md5_of_body: string }
+
+export type SendMessageOptions = undefined | { delay_seconds?: number, message_attribute?: Attributes }
 
 export type Sqs = {
 	create_queue: (name: string, attributes?: Attributes) => Promise<string>
 	get_queue_url: (name: string) => Promise<string>
 	get_queue_attributes: (queue_url: string, attribute_names: string[]) => Promise<Attributes>
 	delete_queue: (queue_url: string) => Promise<void>
-	send_message: (queue_url: string, message: string, opts?: { delay_seconds?: number, message_attribute?: Attributes }) => Promise<MessageResponse>
+	send_message: (queue_url: string, message: string, opts?: SendMessageOptions) => Promise<MessageResponse>
 	send_message_batch: (queue_url: string, messages: string[]) => Promise<MessageResponse[]>
 	receive_message: (queue_url: string, opts?: {
 		max_number_of_messages?: number
